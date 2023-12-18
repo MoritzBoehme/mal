@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Any
 
 class MALList(list):
     pass
@@ -16,3 +16,4 @@ class MALNil:
     pass
 
 MALType = Union[MALList, MALInt, MALSymbol]
+MALEnv = dict[str, Any]
