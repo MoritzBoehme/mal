@@ -25,7 +25,7 @@ def EVAL(ast: MALType, env: MALEnv):
         return eval_ast(ast, env)
 
 def PRINT(arg: MALType):
-    return printer.pr_str(arg)
+    return printer.pr_str(arg, print_readably=True)
 
 def eval_ast(ast: MALType, env: MALEnv):
     if isinstance(ast, MALSymbol):

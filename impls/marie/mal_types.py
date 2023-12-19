@@ -3,6 +3,9 @@ from typing import Union, Any
 class MALList(list):
     pass
 
+class MALVector(list):
+    pass
+
 class MALInt(int):
     pass
 

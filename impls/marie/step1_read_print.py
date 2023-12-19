@@ -9,7 +9,7 @@ def EVAL(arg: MALType):
     return arg
 
 def PRINT(arg: MALType):
-    return printer.pr_str(arg)
+    return printer.pr_str(arg, print_readably=True)
 
 def rep(arg: str):
     r = READ(arg)
