@@ -26,5 +26,5 @@ def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
 def unsecape(string: str) -> str:
     backslash = string.replace("\\", "\\\\")
     quotes = backslash.replace('"','\\"')
-    newline = quotes.replace("\n", "\\\\n")
+    newline = quotes.replace("\n", "\\n")
     return newline
