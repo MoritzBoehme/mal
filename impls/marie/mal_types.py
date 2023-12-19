@@ -44,9 +44,9 @@ class MALBool(StrEnum):
     @classmethod
     def from_bool(cls: Self, b: bool):
         if b:
-            return MALBool.TRUE
+            return cls.TRUE
         else:
-            return MALBool.FALSE
+            return cls.FALSE
 
 
 MALType = Union[
