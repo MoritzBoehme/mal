@@ -26,5 +26,8 @@ class MALBool(StrEnum):
     TRUE = "true"
     FALSE = "false"
 
-MALType = Union[MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash]
+    def __bool__(self):
+        return self == MALBool.TRUE
+
+MALType = Union[MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool]
 MALEnv = dict[str, Any]
