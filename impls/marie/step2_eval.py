@@ -1,6 +1,6 @@
 import reader
 import printer
-from mal_types import MALType, MALEnv, MALSymbol, MALList, MALInt
+from mal_types import MALType, MALEnv, MALSymbol, MALList, MALInt, MALVector
 
 repl_env: MALEnv = {
     "+": lambda a, b: MALInt(a + b),
@@ -35,6 +35,8 @@ def eval_ast(ast: MALType, env: MALEnv):
         return symb
     elif isinstance(ast, MALList):
         return MALList([EVAL(sub, env) for sub in ast])
+    elif isinstance(ast, MALVector):
+        return MALVector([EVAL(sub, env) for sub in ast])
     else:
         return ast
 
