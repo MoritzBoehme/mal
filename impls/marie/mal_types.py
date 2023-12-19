@@ -1,26 +1,38 @@
-from typing import Union, Any
 from enum import StrEnum
+from typing import Any, Self, Union
+
 
 class MALList(list):
     pass
 
+
 class MALVector(list):
     pass
+
 
 class MALInt(int):
     pass
 
+
 class MALSymbol(str):
     pass
+
 
 class MALString(str):
     pass
 
+
 class MALNil:
-    pass
+    def __len__(self):
+        return 0
+
+    def __eq__(self, other):
+        return isinstance(other, MALNil)
+
 
 class MALHash(dict):
     pass
+
 
 class MALBool(StrEnum):
     TRUE = "true"
@@ -29,5 +41,15 @@ class MALBool(StrEnum):
     def __bool__(self):
         return self == MALBool.TRUE
 
-MALType = Union[MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool]
+    @classmethod
+    def from_bool(cls: Self, b: bool):
+        if b:
+            return MALBool.TRUE
+        else:
+            return MALBool.FALSE
+
+
+MALType = Union[
+    MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool
+]
 MALEnv = dict[str, Any]

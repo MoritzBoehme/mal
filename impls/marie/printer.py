@@ -1,4 +1,5 @@
 import mal_types
+from typing import Callable
 
 def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
     if isinstance(mal, mal_types.MALList):
@@ -9,10 +10,9 @@ def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
         return str(mal)
     elif isinstance(mal, mal_types.MALString):
         if print_readably:
-            string = unsecape(mal)
+            return f"\"{unsecape(mal)}\""
         else:
-            string = mal
-        return f"\"{string}\""
+            return mal
     elif isinstance(mal, mal_types.MALNil):
         return "nil"
     elif isinstance(mal, mal_types.MALVector):
@@ -22,6 +22,8 @@ def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
         return f"{{{' '.join(pairs)}}}"
     elif isinstance(mal, mal_types.MALBool):
         return str(mal)
+    elif isinstance(mal, Callable):
+        return "#<function>"
     else:
         raise RuntimeError(f"Cannot print type: {type(mal)}!")
 
