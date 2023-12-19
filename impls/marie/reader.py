@@ -1,15 +1,5 @@
 import re
-
-from mal_types import (
-    MALInt,
-    MALList,
-    MALNil,
-    MALString,
-    MALSymbol,
-    MALType,
-    MALVector,
-    MALHash,
-)
+import mal_types
 
 REGEX = r"[\s,]*(~@|[\[\]{}()'`~^@]|\"(?:\\.|[^\\\"])*\"?|;.*|[^\s\[\]{}('\"`,;)]*)"
 COMPILED = re.compile(REGEX)
@@ -29,7 +19,7 @@ class Reader:
         return self.tokens[self.position]
 
 
-def read_str(string: str) -> MALType:
+def read_str(string: str) -> mal_types.MALType:
     tokens = tokenize(string)
     reader = Reader(tokens)
     return read_form(reader)
@@ -39,7 +29,7 @@ def tokenize(string: str) -> list[str]:
     return COMPILED.findall(string)
 
 
-def read_hash(reader: Reader) -> MALHash:
+def read_hash(reader: Reader) -> mal_types.MALHash:
     reader.next()  # skip {
     mal_hash = {}
     try:
@@ -54,10 +44,10 @@ def read_hash(reader: Reader) -> MALHash:
             mal_hash[key] = value
     except IndexError:
         raise Exception("EOF")
-    return MALHash(mal_hash)
+    return mal_types.MALHash(mal_hash)
 
 
-def read_list(reader: Reader, end: str, type_class: type) -> MALList:
+def read_list(reader: Reader, end: str, type_class: type) -> mal_types.MALList:
     reader.next()  # skip starting char
     mal_list = []
     try:
@@ -71,20 +61,23 @@ def read_list(reader: Reader, end: str, type_class: type) -> MALList:
 def read_atom(reader: Reader):
     tok = reader.next()
     try:
-        return MALInt(tok)
+        return mal_types.MALInt(tok)
     except Exception:
         pass
 
     if tok.startswith('"'):
-        return MALString(escape_string(tok))
+        return mal_types.MALString(escape_string(tok))
 
     if tok == "nil":
-        return MALNil()
+        return mal_types.MALNil()
 
-    return MALSymbol(tok)
+    if tok == mal_types.MALBool.TRUE or tok == mal_types.MALBool.FALSE:
+        return mal_types.MALBool(tok)
+
+    return mal_types.MALSymbol(tok)
 
 
-def escape_string(tok: str) -> MALString:
+def escape_string(tok: str) -> mal_types.MALString:
     reader = Reader(list(tok))
     reader.next()  # skip "
     string = []
@@ -107,12 +100,12 @@ def escape_string(tok: str) -> MALString:
     return "".join(string)
 
 
-def read_form(reader: Reader) -> MALType:
+def read_form(reader: Reader) -> mal_types.MALType:
     match reader.peek():
         case "(":
-            return read_list(reader, end=")", type_class=MALList)
+            return read_list(reader, end=")", type_class=mal_types.MALList)
         case "[":
-            return read_list(reader, end="]", type_class=MALVector)
+            return read_list(reader, end="]", type_class=mal_types.MALVector)
         case "{":
             return read_hash(reader)
         case _:

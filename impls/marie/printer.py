@@ -20,6 +20,8 @@ def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
     elif isinstance(mal, mal_types.MALHash):
         pairs = (f"{pr_str(k, print_readably)} {pr_str(v, print_readably)}" for k, v in mal.items())
         return f"{{{' '.join(pairs)}}}"
+    elif isinstance(mal, mal_types.MALBool):
+        return str(mal)
     else:
         raise RuntimeError(f"Cannot print type: {type(mal)}!")
 

@@ -1,4 +1,5 @@
 from typing import Union, Any
+from enum import StrEnum
 
 class MALList(list):
     pass
@@ -20,6 +21,10 @@ class MALNil:
 
 class MALHash(dict):
     pass
+
+class MALBool(StrEnum):
+    TRUE = "true"
+    FALSE = "false"
 
 MALType = Union[MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash]
 MALEnv = dict[str, Any]
