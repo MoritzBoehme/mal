@@ -18,5 +18,8 @@ class MALString(str):
 class MALNil:
     pass
 
-MALType = Union[MALList, MALInt, MALSymbol]
+class MALHash(dict):
+    pass
+
+MALType = Union[MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash]
 MALEnv = dict[str, Any]

@@ -1,6 +1,15 @@
 import re
 
-from mal_types import MALInt, MALList, MALNil, MALString, MALSymbol, MALType, MALVector
+from mal_types import (
+    MALInt,
+    MALList,
+    MALNil,
+    MALString,
+    MALSymbol,
+    MALType,
+    MALVector,
+    MALHash,
+)
 
 REGEX = r"[\s,]*(~@|[\[\]{}()'`~^@]|\"(?:\\.|[^\\\"])*\"?|;.*|[^\s\[\]{}('\"`,;)]*)"
 COMPILED = re.compile(REGEX)
@@ -30,18 +39,26 @@ def tokenize(string: str) -> list[str]:
     return COMPILED.findall(string)
 
 
-def read_form(reader: Reader) -> MALType:
-    match reader.peek():
-        case "(":
-            return read_list(reader, end=")", type_class=MALList)
-        case "[":
-            return read_list(reader, end="]", type_class=MALVector)
-        case _:
-            return read_atom(reader)
+def read_hash(reader: Reader) -> MALHash:
+    reader.next()  # skip {
+    mal_hash = {}
+    try:
+        while True:
+            if reader.peek() == "}":
+                reader.next()
+                break
+            key = read_form(reader)
+            if reader.peek() == "}":
+                raise Exception("key without value")
+            value = read_form(reader)
+            mal_hash[key] = value
+    except IndexError:
+        raise Exception("EOF")
+    return MALHash(mal_hash)
 
 
 def read_list(reader: Reader, end: str, type_class: type) -> MALList:
-    reader.next()  # skip (
+    reader.next()  # skip starting char
     mal_list = []
     try:
         while not (tok := read_form(reader)) == end:
@@ -88,3 +105,15 @@ def escape_string(tok: str) -> MALString:
     except Exception:
         raise Exception("unbalanced double quotes")
     return "".join(string)
+
+
+def read_form(reader: Reader) -> MALType:
+    match reader.peek():
+        case "(":
+            return read_list(reader, end=")", type_class=MALList)
+        case "[":
+            return read_list(reader, end="]", type_class=MALVector)
+        case "{":
+            return read_hash(reader)
+        case _:
+            return read_atom(reader)

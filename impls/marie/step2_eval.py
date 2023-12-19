@@ -1,6 +1,6 @@
 import reader
 import printer
-from mal_types import MALType, MALEnv, MALSymbol, MALList, MALInt, MALVector
+from mal_types import MALType, MALEnv, MALSymbol, MALList, MALInt, MALVector, MALHash
 
 repl_env: MALEnv = {
     "+": lambda a, b: MALInt(a + b),
@@ -17,8 +17,8 @@ def READ(arg: str):
 def EVAL(ast: MALType, env: MALEnv):
     if isinstance(ast, MALList):
         if len(ast) > 0:
-            evaluated = eval_ast(ast, env)
-            return evaluated[0](*evaluated[1:])
+            f, *args = eval_ast(ast, env)
+            return f(*args)
         else:
             return ast
     else:
@@ -31,12 +31,14 @@ def eval_ast(ast: MALType, env: MALEnv):
     if isinstance(ast, MALSymbol):
         symb = env.get(ast)
         if symb is None:
-            raise Exception("symbol not found")
+            raise Exception(f"{ast} not found")
         return symb
     elif isinstance(ast, MALList):
         return MALList([EVAL(sub, env) for sub in ast])
     elif isinstance(ast, MALVector):
         return MALVector([EVAL(sub, env) for sub in ast])
+    elif isinstance(ast, MALHash):
+        return MALHash({k: EVAL(v, env) for k, v in ast.items()})
     else:
         return ast
 
