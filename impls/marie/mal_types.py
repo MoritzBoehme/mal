@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Any, Self, Union
+from typing import Self, Union
 
 
 class MALList(list):
@@ -48,8 +48,17 @@ class MALBool(StrEnum):
         else:
             return cls.FALSE
 
-
 MALType = Union[
     MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool
 ]
-MALEnv = dict[str, Any]
+
+class MALFunction:
+    def __init__(
+        self, ast: MALType, params: list[MALSymbol], env: "Env"
+    ):
+        self.ast = ast
+        self.params = params
+        self.env = env
+
+
+
