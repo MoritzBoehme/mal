@@ -1,5 +1,8 @@
+from typing import Callable
+
 import mal_types
 import printer
+import reader
 
 
 def eq(a: int, b: int, *args):
@@ -56,6 +59,30 @@ def println(*args):
     return mal_types.MALNil()
 
 
+def slurp(*args):
+    with open(args[0], "r") as f:
+        contents = f.read()
+    return mal_types.MALString(contents)
+
+
+def is_atom(atom: mal_types.MALAtom):
+    return mal_types.MALBool.from_bool(isinstance(atom, mal_types.MALAtom))
+
+
+def deref(atom: mal_types.MALAtom):
+    return atom.value
+
+
+def reset(atom: mal_types.MALAtom, value: mal_types.MALType):
+    atom.value = value
+    return value
+
+
+def swap(atom: mal_types.MALAtom, func: mal_types.MALFunction | Callable, *args):
+    result = func(atom.value, *args)
+    return reset(atom, result)
+
+
 ns = {
     "=": eq,
     "<": lt,
@@ -74,4 +101,11 @@ ns = {
     "-": lambda a, b: mal_types.MALInt(a - b),
     "*": lambda a, b: mal_types.MALInt(a * b),
     "/": lambda a, b: mal_types.MALInt(a / b),
+    "read-string": reader.read_str,
+    "slurp": slurp,
+    "atom": mal_types.MALAtom,
+    "atom?": is_atom,
+    "deref": deref,
+    "reset!": reset,
+    "swap!": swap,
 }

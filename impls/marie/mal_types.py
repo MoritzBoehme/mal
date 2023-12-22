@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Self, Union
+from typing import Self, Union, Callable
 
 
 class MALList(list):
@@ -48,17 +48,30 @@ class MALBool(StrEnum):
         else:
             return cls.FALSE
 
-MALType = Union[
+SimpleMALType = Union[
     MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool
 ]
 
+class MALAtom:
+    def __init__(self, value: SimpleMALType):
+        self.value = value
+
 class MALFunction:
     def __init__(
-        self, ast: MALType, params: list[MALSymbol], env: "Env"
+            self, ast: SimpleMALType, params: list[MALSymbol], env: "Env", eval: Callable | None = None,
     ):
         self.ast = ast
         self.params = params
         self.env = env
 
+        def fn(*args):
+            # HACK: because we cannot import the Env class
+            fn_env = type(env)(env, params, list(args))
+            return eval(ast, fn_env)
+        self.fn = fn
+
+    def __call__(self, *args, **kwargs):
+        return self.fn(*args, **kwargs)
 
 
+MALType = SimpleMALType | MALAtom | MALFunction

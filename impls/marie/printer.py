@@ -1,4 +1,5 @@
 import mal_types
+from typing import Callable
 
 def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
     if isinstance(mal, mal_types.MALList):
@@ -21,8 +22,10 @@ def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
         return f"{{{' '.join(pairs)}}}"
     elif isinstance(mal, mal_types.MALBool):
         return str(mal)
-    elif isinstance(mal, mal_types.MALFunction):
+    elif isinstance(mal, mal_types.MALFunction | Callable):
         return "#<function>"
+    elif isinstance(mal, mal_types.MALAtom):
+        return f"(atom {pr_str(mal.value, print_readably)})"
     else:
         raise RuntimeError(f"Cannot print type: {type(mal)}!")
 

@@ -1,7 +1,10 @@
-import reader
-import printer
-from mal_types import MALType, MALEnv, MALSymbol, MALList, MALInt, MALVector, MALHash
+from typing import Callable
 
+import printer
+import reader
+from mal_types import MALHash, MALInt, MALList, MALSymbol, MALType, MALVector
+
+MALEnv = dict[str, Callable]
 repl_env: MALEnv = {
     "+": lambda a, b: MALInt(a + b),
     "-": lambda a, b: MALInt(a - b),
@@ -24,8 +27,10 @@ def EVAL(ast: MALType, env: MALEnv):
     else:
         return eval_ast(ast, env)
 
+
 def PRINT(arg: MALType):
     return printer.pr_str(arg, print_readably=True)
+
 
 def eval_ast(ast: MALType, env: MALEnv):
     if isinstance(ast, MALSymbol):
@@ -41,6 +46,7 @@ def eval_ast(ast: MALType, env: MALEnv):
         return MALHash({k: EVAL(v, env) for k, v in ast.items()})
     else:
         return ast
+
 
 def rep(arg: str):
     r = READ(arg)

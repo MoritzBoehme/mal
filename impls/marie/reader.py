@@ -26,7 +26,9 @@ def read_str(string: str) -> mal_types.MALType:
 
 
 def tokenize(string: str) -> list[str]:
-    return COMPILED.findall(string)
+    tokens = COMPILED.findall(string)
+    without_comments = [token for token in tokens if not token.startswith(";")]
+    return without_comments
 
 
 def read_hash(reader: Reader) -> mal_types.MALHash:
