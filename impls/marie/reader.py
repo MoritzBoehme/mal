@@ -110,5 +110,8 @@ def read_form(reader: Reader) -> mal_types.MALType:
             return read_list(reader, end="]", type_class=mal_types.MALVector)
         case "{":
             return read_hash(reader)
+        case "@":
+            reader.next() # skip "@"
+            return mal_types.MALList([mal_types.MALSymbol("deref")] + [read_form(reader)])
         case _:
             return read_atom(reader)
