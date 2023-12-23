@@ -1,37 +1,60 @@
 from enum import StrEnum
-from typing import Self, Union, Callable
+from typing import Callable, NamedTuple, Self, Union
 
 
-class MALList(list):
-    pass
+class MALContainer(NamedTuple):
+    value: list["MALType"]
 
-
-class MALVector(list):
-    pass
-
-
-class MALInt(int):
-    pass
-
-
-class MALSymbol(str):
-    pass
-
-
-class MALString(str):
-    pass
-
-
-class MALNil:
     def __len__(self):
-        return 0
+        return len(self.value)
+
+    def __getitem__(self, idx):
+        return self.value[idx]
 
     def __eq__(self, other):
-        return isinstance(other, MALNil)
+        if isinstance(other, MALContainer):
+            return self.value == other.value
+        return False
 
 
-class MALHash(dict):
+class MALList(MALContainer):
     pass
+
+
+class MALVector(MALContainer):
+    pass
+
+
+class MALInt(NamedTuple):
+    value: int
+
+    def __add__(self, other) -> Self:
+        return MALInt(self.value + other.value)
+
+    def __mul__(self, other) -> Self:
+        return MALInt(self.value * other.value)
+
+    def __truediv__(self, other) -> Self:
+        return MALInt(self.value / other.value)
+
+    def __sub__(self, other) -> Self:
+        return MALInt(self.value - other.value)
+
+
+class MALSymbol(NamedTuple):
+    value: str
+
+
+class MALString(NamedTuple):
+    value: str
+
+
+class MALNil(NamedTuple):
+    pass
+
+
+class MALHash(NamedTuple):
+    value: dict["MALType", "MALType"]
 
 
 class MALBool(StrEnum):
@@ -48,17 +71,24 @@ class MALBool(StrEnum):
         else:
             return cls.FALSE
 
+
 SimpleMALType = Union[
     MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool
 ]
+
 
 class MALAtom:
     def __init__(self, value: SimpleMALType):
         self.value = value
 
+
 class MALFunction:
     def __init__(
-            self, ast: SimpleMALType, params: list[MALSymbol], env: "Env", eval: Callable | None = None,
+        self,
+        ast: SimpleMALType,
+        params: list[MALSymbol],
+        env: "Env",
+        eval: Callable | None = None,
     ):
         self.ast = ast
         self.params = params
@@ -68,6 +98,7 @@ class MALFunction:
             # HACK: because we cannot import the Env class
             fn_env = type(env)(env, params, list(args))
             return eval(ast, fn_env)
+
         self.fn = fn
 
     def __call__(self, *args, **kwargs):

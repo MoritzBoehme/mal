@@ -26,7 +26,7 @@ def ge(a: int, b: int, *args):
 
 
 def _list(*args):
-    return mal_types.MALList(args)
+    return mal_types.MALList(list(args))
 
 
 def is_list(lst: mal_types.MALType, *args):
@@ -59,8 +59,8 @@ def println(*args):
     return mal_types.MALNil()
 
 
-def slurp(*args):
-    with open(args[0], "r") as f:
+def slurp(filename):
+    with open(filename.value, "r") as f:
         contents = f.read()
     return mal_types.MALString(contents)
 
@@ -83,6 +83,16 @@ def swap(atom: mal_types.MALAtom, func: mal_types.MALFunction | Callable, *args)
     return reset(atom, result)
 
 
+def concat(*args):
+    final = []
+    for lst in args:
+        final += lst
+    return mal_types.MALList(final)
+
+
+def atom(value):
+    return mal_types.MALAtom(value)
+
 ns = {
     "=": eq,
     "<": lt,
@@ -97,15 +107,17 @@ ns = {
     "str": _str,
     "prn": prn,
     "println": println,
-    "+": lambda a, b: mal_types.MALInt(a + b),
-    "-": lambda a, b: mal_types.MALInt(a - b),
-    "*": lambda a, b: mal_types.MALInt(a * b),
-    "/": lambda a, b: mal_types.MALInt(a / b),
-    "read-string": reader.read_str,
+    "+": lambda a, b: a + b,
+    "-": lambda a, b: a - b,
+    "*": lambda a, b: a * b,
+    "/": lambda a, b: a / b,
+    "read-string": lambda a: reader.read_str(a.value),
     "slurp": slurp,
-    "atom": mal_types.MALAtom,
+    "atom": atom,
     "atom?": is_atom,
     "deref": deref,
     "reset!": reset,
     "swap!": swap,
+    "cons": lambda a, b: [b] + a,
+    "concat": concat,
 }

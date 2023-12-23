@@ -1,82 +1,96 @@
+import sys
+
 import core
-import mal_types
 import printer
 import reader
 from env import Env
-import sys
+from mal_types import (
+    MALAtom,
+    MALBool,
+    MALContainer,
+    MALFunction,
+    MALHash,
+    MALInt,
+    MALList,
+    MALNil,
+    MALString,
+    MALSymbol,
+    MALType,
+    MALVector,
+)
 
 repl_env = Env()
 for k, v in core.ns.items():
     repl_env[k] = v
 
+
 def READ(arg: str):
     return reader.read_str(arg)
 
 
-def EVAL(ast: mal_types.MALType, env: Env):
+def EVAL(ast: MALType, env: Env):
     while True:
-        if not isinstance(ast, mal_types.MALList):
-            return eval_ast(ast, env)
-        elif len(ast) == 0:
-            return ast
-        match ast[0]:
-            case "def!":
-                v = EVAL(ast[2], env)
-                env[ast[1]] = v
+        match ast:
+            case MALContainer([]):
+                return ast
+            case MALList([MALSymbol("def!"), MALSymbol(name), value]):
+                v = EVAL(value, env)
+                env[name] = v
                 return v
-            case "let*":
+            case MALList([MALSymbol("let*"), MALContainer(assignments), expr]):
                 let_env = Env(env)
-                for k, v in zip(ast[1][:-1:2], ast[1][1::2]):
-                    let_env[k] = EVAL(v, let_env)
+                for k, v in zip(assignments[:-1:2], assignments[1::2]):
+                    let_env[k.value] = EVAL(v, let_env)
                 # TCO
                 env = let_env
-                ast = ast[2]
-            case "do":
-                for sub in ast[1:-1]:
-                    EVAL(sub, env)
+                ast = expr
+            case MALList([MALSymbol("do"), *exprs]):
+                for expr in exprs:
+                    EVAL(expr, env)
                 # TCO
                 ast = ast[-1]
-            case "if":
-                condition = EVAL(ast[1], env)
-                if (
-                    not isinstance(condition, mal_types.MALNil)
-                    and condition != mal_types.MALBool.FALSE
-                ):
-                    # TCO
-                    ast = ast[2]
+            case MALList([MALSymbol("if"), condition, *params]):
+                cond = EVAL(condition, env)
+                if not isinstance(cond, MALNil) and cond != MALBool.FALSE:
+                    ast = params[0]
                 else:
-                    if len(ast) > 3:
-                        # TCO
-                        ast = ast[3]
+                    if len(params) > 1:
+                        ast = params[1]
                     else:
-                        return mal_types.MALNil()
-            case "fn*":
-                return mal_types.MALFunction(ast=ast[2], params=ast[1], env=env, eval=EVAL)
-            case _:
-                f, *args = eval_ast(ast, env)
-                if isinstance(f, mal_types.MALFunction):
+                        return MALNil()
+            case MALList([MALSymbol("fn*"), MALContainer(binds), body]):
+                return MALFunction(ast=body, params=binds, env=env, eval=EVAL)
+            case MALList(_):
+                value = eval_ast(ast, env).value
+                f, *args = value
+                if isinstance(f, MALFunction):
                     ast = f.ast
                     env = Env(outer=f.env, binds=f.params, exprs=list(args))
                 else:
                     return f(*args)
+            case _:
+                return eval_ast(ast, env)
+
 
 repl_env["eval"] = lambda a: EVAL(a, repl_env)
 
-def PRINT(arg: mal_types.MALType):
+
+def PRINT(arg: MALType):
     return printer.pr_str(arg, print_readably=True)
 
 
-def eval_ast(ast: mal_types.MALType, env: Env):
-    if isinstance(ast, mal_types.MALSymbol):
-        return env[ast]
-    elif isinstance(ast, mal_types.MALList):
-        return mal_types.MALList([EVAL(sub, env) for sub in ast])
-    elif isinstance(ast, mal_types.MALVector):
-        return mal_types.MALVector([EVAL(sub, env) for sub in ast])
-    elif isinstance(ast, mal_types.MALHash):
-        return mal_types.MALHash({k: EVAL(v, env) for k, v in ast.items()})
-    else:
-        return ast
+def eval_ast(ast: MALType, env: Env):
+    match ast:
+        case MALSymbol(_):
+            return env[ast.value]
+        case MALList(elements):
+            return MALList([EVAL(element, env) for element in elements])
+        case MALVector(elements):
+            return MALVector([EVAL(element, env) for element in elements])
+        case MALHash(mapping):
+            return MALHash({k: EVAL(v, env) for k, v in mapping.items()})
+        case _:
+            return ast
 
 
 def rep(arg: str):
@@ -87,12 +101,12 @@ def rep(arg: str):
 
 
 rep("(def! not (fn* (a) (if a false true)))")
-rep("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))")
+rep('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))')
 
 if __name__ == "__main__":
     repl_env["*ARGV*"] = READ(f"({' '.join(sys.argv[2:])})")
     if len(sys.argv) > 1:
-        rep(f"(load-file \"{sys.argv[1]}\")")
+        rep(f'(load-file "{sys.argv[1]}")')
     else:
         while True:
             try:

@@ -2,14 +2,14 @@ from typing import Callable
 
 import printer
 import reader
-from mal_types import MALHash, MALInt, MALList, MALSymbol, MALType, MALVector
+from mal_types import MALHash, MALList, MALSymbol, MALType, MALVector
 
 MALEnv = dict[str, Callable]
 repl_env: MALEnv = {
-    "+": lambda a, b: MALInt(a + b),
-    "-": lambda a, b: MALInt(a - b),
-    "*": lambda a, b: MALInt(a * b),
-    "/": lambda a, b: MALInt(a / b),
+    "+": lambda a, b: a + b,
+    "-": lambda a, b: a - b,
+    "*": lambda a, b: a * b,
+    "/": lambda a, b: a / b,
 }
 
 
@@ -18,14 +18,15 @@ def READ(arg: str):
 
 
 def EVAL(ast: MALType, env: MALEnv):
-    if isinstance(ast, MALList):
-        if len(ast) > 0:
-            f, *args = eval_ast(ast, env)
-            return f(*args)
-        else:
-            return ast
-    else:
-        return eval_ast(ast, env)
+    match ast:
+        case MALList(elements):
+            if len(elements) > 0:
+                f, *args = eval_ast(ast, env).value
+                return f(*args)
+            else:
+                return ast
+        case _:
+            return eval_ast(ast, env)
 
 
 def PRINT(arg: MALType):
@@ -33,19 +34,20 @@ def PRINT(arg: MALType):
 
 
 def eval_ast(ast: MALType, env: MALEnv):
-    if isinstance(ast, MALSymbol):
-        symb = env.get(ast)
-        if symb is None:
-            raise Exception(f"{ast} not found")
-        return symb
-    elif isinstance(ast, MALList):
-        return MALList([EVAL(sub, env) for sub in ast])
-    elif isinstance(ast, MALVector):
-        return MALVector([EVAL(sub, env) for sub in ast])
-    elif isinstance(ast, MALHash):
-        return MALHash({k: EVAL(v, env) for k, v in ast.items()})
-    else:
-        return ast
+    match ast:
+        case MALSymbol(name):
+            symb = env.get(name)
+            if symb is None:
+                raise Exception(f"{name} not found")
+            return symb
+        case MALList(elements):
+            return MALList([EVAL(element, env) for element in elements])
+        case MALVector(elements):
+            return MALVector([EVAL(element, env) for element in elements])
+        case MALHash(mapping):
+            return MALHash({k: EVAL(v, env) for k, v in mapping.items()})
+        case _:
+            return ast
 
 
 def rep(arg: str):
