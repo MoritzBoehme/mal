@@ -119,5 +119,17 @@ def read_form(reader: Reader) -> mal_types.MALType:
             return mal_types.MALList(
                 [mal_types.MALSymbol("deref")] + [read_form(reader)]
             )
+        case "'":
+            reader.next() # skip "'"
+            return mal_types.MALList([mal_types.MALSymbol("quote"), read_form(reader)])
+        case "`":
+            reader.next() # skip "`"
+            return mal_types.MALList([mal_types.MALSymbol("quasiquote"), read_form(reader)])
+        case "~":
+            reader.next() # skip "~"
+            return mal_types.MALList([mal_types.MALSymbol("unquote"), read_form(reader)])
+        case "~@":
+            reader.next() # skip "~@"
+            return mal_types.MALList([mal_types.MALSymbol("splice-unquote"), read_form(reader)])
         case _:
             return read_atom(reader)

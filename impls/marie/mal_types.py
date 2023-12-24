@@ -44,9 +44,19 @@ class MALInt(NamedTuple):
 class MALSymbol(NamedTuple):
     value: str
 
+    def __eq__(self, other):
+        if isinstance(other, MALSymbol):
+            return self.value == other.value
+        return False
+
 
 class MALString(NamedTuple):
     value: str
+
+    def __eq__(self, other):
+        if isinstance(other, MALString):
+            return self.value == other.value
+        return False
 
 
 class MALNil(NamedTuple):
