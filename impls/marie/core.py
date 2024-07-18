@@ -107,6 +107,18 @@ def concat(*args):
 def atom(value):
     return MALAtom(value)
 
+def nth(lst: MALList | MALVector, i: MALInt) -> MALType:
+    return lst[i.value]
+
+def first(xs: MALList | MALVector | MALNil) -> MALType:
+    if isinstance(xs, MALNil) or len(xs) == 0:
+        return MALNil()
+    return xs[0]
+
+def rest(xs: MALList | MALVector | MALNil) -> MALVector:
+    if isinstance(xs, MALNil) or len(xs) == 0:
+        return MALList([])
+    return MALList(xs[1:])
 
 ns = {
     "=": eq,
@@ -136,4 +148,7 @@ ns = {
     "cons": cons,
     "concat": concat,
     "vec": lambda lst: MALVector(lst.value),
+    "nth": nth,
+    "first": first,
+    "rest": rest,
 }

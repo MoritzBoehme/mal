@@ -103,6 +103,7 @@ class MALFunction:
         self.ast = ast
         self.params = params
         self.env = env
+        self.is_macro = False
 
         def fn(*args):
             # HACK: because we cannot import the Env class
