@@ -36,6 +36,8 @@ def pr_str(mal: mal_types.MALType, print_readably: bool) -> str:
             return "#<function>"
         case mal_types.MALAtom(value=value):
             return f"(atom {pr_str(value, print_readably)})"
+        case mal_types.MALKeyword(value):
+            return f":{value}"
         case _:
             raise RuntimeError(f"Cannot print type: {type(mal)}!")
 

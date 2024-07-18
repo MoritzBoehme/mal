@@ -1,13 +1,13 @@
 from typing import Any, Self
 
-from mal_types import MALList, MALType
+from mal_types import MALList, MALType, MALException, MALString, MALSymbol
 
 
 class Env:
     def __init__(
         self,
         outer: Self | None = None,
-        binds: list[str] = [],
+        binds: list[MALSymbol] = [],
         exprs: list[MALType] = [],
     ):
         self.data = {}
@@ -30,6 +30,6 @@ class Env:
             if self.outer is not None:
                 return self.outer.find(k)
             else:
-                raise Exception(f"{k!r} not found")
+                raise MALException(MALString(f"{k!r} not found"))
         else:
             return self

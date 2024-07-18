@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Callable, NamedTuple, Self, Union
+import printer
 
 
 class MALContainer(NamedTuple):
@@ -81,9 +82,12 @@ class MALBool(StrEnum):
         else:
             return cls.FALSE
 
+class MALKeyword(NamedTuple):
+    value: str
+
 
 SimpleMALType = Union[
-    MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool
+    MALList, MALVector, MALInt, MALSymbol, MALString, MALNil, MALHash, MALBool, MALKeyword
 ]
 
 
@@ -117,3 +121,11 @@ class MALFunction:
 
 
 MALType = SimpleMALType | MALAtom | MALFunction
+
+
+class MALException(Exception):
+    def __init__(self, value: MALType):
+
+        message = f"Exception: {printer.pr_str(value, print_readably=True)}"
+        super().__init__(message)
+        self.value = value

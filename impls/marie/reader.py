@@ -80,6 +80,9 @@ def read_atom(reader: Reader):
     if tok == mal_types.MALBool.TRUE or tok == mal_types.MALBool.FALSE:
         return mal_types.MALBool(tok)
 
+    if tok.startswith(":"):
+        return mal_types.MALKeyword(tok[1:])
+
     return mal_types.MALSymbol(tok)
 
 
